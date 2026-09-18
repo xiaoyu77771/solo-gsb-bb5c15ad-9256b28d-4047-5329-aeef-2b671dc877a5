@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useDeferredValue, useMemo, useRef, useState } from 'react';
 import type { Subtitle } from './types';
-import { parseSrt, serializeSrt } from './srt';
+import { parseSrt, parseTimeInput, serializeSrt } from './srt';
 import { detectIssues } from './issues';
 import { alignSubtitles, applyMerge } from './merge';
+import { applyDrift, planDrift, validateDrift } from './drift';
 import { SAMPLE_SRT } from './sample';
 import { useWaveform } from './useWaveform';
 import Toolbar from './components/Toolbar';
@@ -10,6 +11,8 @@ import VideoPlayer from './components/VideoPlayer';
 import Timeline from './components/Timeline';
 import IssuesPanel from './components/IssuesPanel';
 import RevisionMergePanel from './components/RevisionMergePanel';
+import DriftPanel, { EMPTY_DRIFT_FORM } from './components/DriftPanel';
+import type { DriftForm } from './components/DriftPanel';
 import './styles.css';
 
 interface History {
@@ -34,6 +37,9 @@ export default function App() {
   const [pxPerSec, setPxPerSec] = useState(80);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showMerge, setShowMerge] = useState(false);
+  const [showDrift, setShowDrift] = useState(false);
+  // 漂移校准表单（锚点选择 + 目标时间输入），面板关闭后保留，重新导入字幕时重置
+  const [driftForm, setDriftForm] = useState<DriftForm>(EMPTY_DRIFT_FORM);
   // 修订稿独立于当前字幕保存：导入不会替换当前时间轴
   const [revision, setRevision] = useState<Subtitle[]>([]);
   const [revisionName, setRevisionName] = useState('');
@@ -92,9 +98,10 @@ export default function App() {
     setSrtName(name);
     setSelectedId(null);
     setCurrentTime(0);
-    // 新字幕载入后，旧修订稿的匹配已失效，一并清空
+    // 新字幕载入后，旧修订稿的匹配与旧锚点（id 已失效）一并清空
     setRevision([]);
     setRevisionName('');
+    setDriftForm(EMPTY_DRIFT_FORM);
   }, []);
 
   const importSrt = useCallback(
@@ -130,6 +137,24 @@ export default function App() {
       };
     });
   }, [revision]);
+
+  // 应用双锚点漂移校准：所有字幕按锚点方案同步平移（时长不变），
+  // 整批作为一次撤销/重做操作
+  const applyDriftCalibration = useCallback(() => {
+    const inputA = { id: driftForm.a.id, targetStart: parseTimeInput(driftForm.a.target) };
+    const inputB = { id: driftForm.b.id, targetStart: parseTimeInput(driftForm.b.target) };
+    setHistory((h) => {
+      // 基于 history.present 即时校验并重算方案，与面板预览使用同一套规则
+      if (validateDrift(h.present, inputA, inputB) !== null) return h;
+      const plan = planDrift(h.present, inputA, inputB);
+      if (!plan || plan.affected === 0) return h;
+      return {
+        past: [...h.past, h.present],
+        present: applyDrift(h.present, plan.offsets),
+        future: [],
+      };
+    });
+  }, [driftForm]);
 
   const importVideo = useCallback(
     (file: File) => {
@@ -185,7 +210,11 @@ export default function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')
+      )
+        return;
       const mod = e.ctrlKey || e.metaKey;
       if (mod && e.key.toLowerCase() === 'z') {
         e.preventDefault();
@@ -220,6 +249,7 @@ export default function App() {
         hasSubs={subs.length > 0}
         hasSelection={selectedId !== null}
         showMerge={showMerge}
+        showDrift={showDrift}
         onImportSrt={importSrt}
         onImportVideo={importVideo}
         onLoadSample={loadSample}
@@ -230,7 +260,15 @@ export default function App() {
         onToggleFollow={setFollow}
         onZoom={setPxPerSec}
         onDeleteSelected={deleteSelected}
-        onToggleMerge={() => setShowMerge((v) => !v)}
+        onToggleMerge={() => {
+          // 两个侧栏互斥，避免同时挤压视频区
+          setShowMerge((v) => !v);
+          setShowDrift(false);
+        }}
+        onToggleDrift={() => {
+          setShowDrift((v) => !v);
+          setShowMerge(false);
+        }}
       />
 
       <main className="main">
@@ -254,6 +292,15 @@ export default function App() {
               onApply={applyRevision}
               onClear={clearRevision}
               onJump={jumpTo}
+            />
+          )}
+          {showDrift && (
+            <DriftPanel
+              subs={subs}
+              currentTime={currentTime}
+              form={driftForm}
+              onFormChange={setDriftForm}
+              onApply={applyDriftCalibration}
             />
           )}
         </section>

@@ -11,6 +11,7 @@ interface ToolbarProps {
   hasSubs: boolean;
   hasSelection: boolean;
   showMerge: boolean;
+  showDrift: boolean;
   onImportSrt: (file: File) => void;
   onImportVideo: (file: File) => void;
   onLoadSample: () => void;
@@ -22,6 +23,7 @@ interface ToolbarProps {
   onZoom: (v: number) => void;
   onDeleteSelected: () => void;
   onToggleMerge: () => void;
+  onToggleDrift: () => void;
 }
 
 export default function Toolbar(props: ToolbarProps) {
@@ -90,6 +92,14 @@ export default function Toolbar(props: ToolbarProps) {
           title={props.hasSubs ? '打开修订稿合并侧栏' : '请先导入当前字幕'}
         >
           📚 修订稿合并
+        </button>
+        <button
+          className={`btn ${props.showDrift ? 'primary' : ''}`}
+          disabled={!props.hasSubs}
+          onClick={props.onToggleDrift}
+          title={props.hasSubs ? '打开双锚点漂移校准侧栏' : '请先导入当前字幕'}
+        >
+          ⚓ 漂移校准
         </button>
       </div>
 

@@ -599,6 +599,126 @@ body {
   width: 100%;
 }
 
+/* ---------- 双锚点漂移校准侧栏 ---------- */
+.drift-panel {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.drift-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.drift-title {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.drift-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.drift-anchor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.drift-anchor-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.drift-select,
+.drift-input {
+  width: 100%;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.drift-select:focus,
+.drift-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.drift-target-row {
+  display: flex;
+  gap: 6px;
+}
+
+.drift-target-row .drift-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.drift-target-row .btn {
+  flex-shrink: 0;
+}
+
+.drift-offset {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.drift-summary {
+  font-size: 12px;
+  color: var(--text-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.drift-summary b {
+  color: var(--text);
+}
+
+.drift-error {
+  font-size: 12px;
+  color: var(--danger);
+  line-height: 1.4;
+}
+
+.drift-footer {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.drift-footer .btn {
+  width: 100%;
+}
+
 /* ---------- 时间轴 ---------- */
 .timeline-wrap {
   flex-shrink: 0;

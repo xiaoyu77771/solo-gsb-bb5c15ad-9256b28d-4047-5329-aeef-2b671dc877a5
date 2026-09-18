@@ -43,6 +43,28 @@ export function parseTimestamp(ts: string): number {
   );
 }
 
+/**
+ * 解析用户手输的时间，支持：
+ *  - 纯秒数："83"、"83.5"
+ *  - "MM:SS" / "HH:MM:SS"，秒可带毫秒（逗号或句点）："02:05"、"00:01:23,500"
+ * 返回毫秒；无法解析时返回 null
+ */
+export function parseTimeInput(input: string): number | null {
+  const s = input.trim();
+  if (!s) return null;
+  if (/^\d+(?:\.\d+)?$/.test(s)) return Math.round(Number(s) * 1000);
+  const m = s.match(/^(?:(\d{1,3}):)?(\d{1,2}):(\d{1,2})(?:[,.](\d{1,3}))?$/);
+  if (!m) return null;
+  const [, h, mm, ss, ms] = m;
+  if (Number(mm) >= 60 || Number(ss) >= 60) return null;
+  return (
+    (h ? Number(h) : 0) * 3600000 +
+    Number(mm) * 60000 +
+    Number(ss) * 1000 +
+    (ms ? Number(ms.padEnd(3, '0')) : 0)
+  );
+}
+
 /** 毫秒 -> "00:01:23,456" */
 export function formatTimestamp(ms: number): string {
   const t = Math.max(0, Math.round(ms));
