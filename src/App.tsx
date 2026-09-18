@@ -3,6 +3,7 @@ import type { Subtitle } from './types';
 import { parseSrt, serializeSrt } from './srt';
 import { detectIssues } from './issues';
 import { alignSubtitles, applyMerge } from './merge';
+import { applyCalibration, buildCalibrationPlan, type AnchorInput } from './calibration';
 import { SAMPLE_SRT } from './sample';
 import { useWaveform } from './useWaveform';
 import Toolbar from './components/Toolbar';
@@ -10,6 +11,7 @@ import VideoPlayer from './components/VideoPlayer';
 import Timeline from './components/Timeline';
 import IssuesPanel from './components/IssuesPanel';
 import RevisionMergePanel from './components/RevisionMergePanel';
+import AnchorCalibrationPanel from './components/AnchorCalibrationPanel';
 import './styles.css';
 
 interface History {
@@ -34,6 +36,7 @@ export default function App() {
   const [pxPerSec, setPxPerSec] = useState(80);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showMerge, setShowMerge] = useState(false);
+  const [showCalibrate, setShowCalibrate] = useState(false);
   // 修订稿独立于当前字幕保存：导入不会替换当前时间轴
   const [revision, setRevision] = useState<Subtitle[]>([]);
   const [revisionName, setRevisionName] = useState('');
@@ -131,6 +134,20 @@ export default function App() {
     });
   }, [revision]);
 
+  // 应用双锚点漂移校准：基于 history.present 即时重算计划（避免延迟值），
+  // 整批平移作为一次撤销/重做操作，所有字幕时长保持不变
+  const applyAnchors = useCallback((a: AnchorInput, b: AnchorInput) => {
+    setHistory((h) => {
+      const result = buildCalibrationPlan(h.present, a, b);
+      if (!result.valid || !result.plan || result.plan.affected === 0) return h;
+      return {
+        past: [...h.past, h.present],
+        present: applyCalibration(h.present, result.plan),
+        future: [],
+      };
+    });
+  }, []);
+
   const importVideo = useCallback(
     (file: File) => {
       setVideoUrl((old) => {
@@ -185,7 +202,7 @@ export default function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) return;
       const mod = e.ctrlKey || e.metaKey;
       if (mod && e.key.toLowerCase() === 'z') {
         e.preventDefault();
@@ -220,6 +237,7 @@ export default function App() {
         hasSubs={subs.length > 0}
         hasSelection={selectedId !== null}
         showMerge={showMerge}
+        showCalibrate={showCalibrate}
         onImportSrt={importSrt}
         onImportVideo={importVideo}
         onLoadSample={loadSample}
@@ -231,6 +249,7 @@ export default function App() {
         onZoom={setPxPerSec}
         onDeleteSelected={deleteSelected}
         onToggleMerge={() => setShowMerge((v) => !v)}
+        onToggleCalibrate={() => setShowCalibrate((v) => !v)}
       />
 
       <main className="main">
@@ -254,6 +273,14 @@ export default function App() {
               onApply={applyRevision}
               onClear={clearRevision}
               onJump={jumpTo}
+            />
+          )}
+          {showCalibrate && (
+            <AnchorCalibrationPanel
+              subs={subs}
+              selectedId={selectedId}
+              onJump={jumpTo}
+              onApply={applyAnchors}
             />
           )}
         </section>

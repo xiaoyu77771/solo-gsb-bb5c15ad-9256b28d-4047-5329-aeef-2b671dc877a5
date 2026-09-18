@@ -599,6 +599,172 @@ body {
   width: 100%;
 }
 
+/* ---------- 双锚点漂移校准侧栏 ---------- */
+.cal-panel {
+  width: 330px;
+}
+
+.cal-intro {
+  line-height: 1.55;
+  padding: 2px 2px 4px;
+}
+
+.cal-intro b {
+  color: var(--text);
+}
+
+.cal-anchor {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cal-anchor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cal-anchor-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.cal-anchor-badge.b1 {
+  background: rgba(79, 140, 255, 0.2);
+  color: var(--accent);
+}
+
+.cal-anchor-badge.b2 {
+  background: rgba(52, 201, 142, 0.18);
+  color: var(--ok);
+}
+
+.cal-use-btn {
+  flex-shrink: 0;
+}
+
+.cal-select,
+.cal-time-input {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.cal-select:focus,
+.cal-time-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.cal-select option {
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+.cal-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.cal-row-label {
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.cal-row-val {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cal-jump {
+  margin-left: auto;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.cal-jump:hover {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.cal-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.cal-pos {
+  color: var(--ok);
+}
+
+.cal-neg {
+  color: var(--warn);
+}
+
+.cal-status {
+  font-size: 12px;
+  border-radius: 5px;
+  padding: 7px 9px;
+  line-height: 1.45;
+}
+
+.cal-status.invalid {
+  background: rgba(242, 85, 90, 0.12);
+  border: 1px solid rgba(242, 85, 90, 0.4);
+  color: var(--danger);
+}
+
+.cal-status.ok {
+  background: rgba(52, 201, 142, 0.1);
+  border: 1px solid rgba(52, 201, 142, 0.35);
+  color: var(--ok);
+}
+
+.cal-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 9px;
+}
+
+.cal-sum-row {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-sum-row b {
+  color: var(--text);
+}
+
+.cal-warn {
+  color: var(--warn);
+}
+
 /* ---------- 时间轴 ---------- */
 .timeline-wrap {
   flex-shrink: 0;
